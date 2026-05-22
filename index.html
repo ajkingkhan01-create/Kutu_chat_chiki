@@ -573,19 +573,32 @@
   </div>
 </div>
 
-<script>
+<script type="module">
 /* ══════════════════════════════════════════════════════
    CONFIGURATION — Customize these values
 ══════════════════════════════════════════════════════ */
 const CONFIG = {
-  // ── Auth (replace with Firebase Auth later) ──────────
+  // ── Auth Credentials ──────────────────────────────────
+  // Map usernames to Firebase emails for easy login
   users: {
-    'chiki': 'kutu',
-    'Meeratik': 'putuputu',
+    'atik': 'ajkingkhan01@gmail.com',
+    'ajkingkhan01': 'ajkingkhan01@gmail.com',
+    'meera': 'ilovekutubaby@sexy.com',
+    'kutu': 'ilovekutubaby@sexy.com',
+    'ilovekutubaby': 'ilovekutubaby@sexy.com',
+  },
+  
+  // User display info
+  userNames: {
+    'ajkingkhan01@gmail.com': { name: 'Atik', emoji: '🐾', role: 'him' },
+    'ilovekutubaby@sexy.com': { name: 'Meera', emoji: '🌸', role: 'her' },
   },
 
   // ── Relationship Start Date ───────────────────────────
   startDate: '2025-07-14',   // Change to your actual date
+
+  // ── Daily Surprises Rotation ─────────────────────────
+  everRotation: ['🌙', '✨', '🌸', '💝', '🥰', '💗', '🦋', '🌹', '🫶', '🥺'],
 
   // ── Gallery ───────────────────────────────────────────
   gallery: {
@@ -593,36 +606,25 @@ const CONFIG = {
       title: 'You & Me',    
       subtitle: 'Our pictures together',    
       thumbnailSrc: 'https://i.ibb.co.com/S71csQxZ/Cover.jpg', 
-      fullSrc: [
-        'https://i.ibb.co.com/S71csQxZ/Cover.jpg',
-        'https://i.ibb.co.com/gLQBpJ8Y/2.jpg',
-        'https://i.ibb.co.com/YOUR-THIRD-PHOTO-URL.jpg'
-      ] 
+      fullSrc: 'https://i.ibb.co.com/S71csQxZ/Cover.jpg'
     },
     kutu: { 
       title: 'Kutu Baby',   
       subtitle: 'Edited pictures of her',   
       thumbnailSrc: 'https://i.ibb.co.com/8gsrkjxH/Adobe-Express-file-1.jpg', 
-      fullSrc: [
-        'https://i.ibb.co.com/67P9tN6S/IMG-9593.jpg',
-        'https://i.ibb.co.com/YOUR-KUTU-PHOTO-2.jpg'
-      ] 
+      fullSrc: 'https://i.ibb.co.com/8gsrkjxH/Adobe-Express-file-1.jpg'
     },
     chiki: { 
       title: 'Chiki Baby',  
       subtitle: 'AI-generated video clips', 
       thumbnailSrc: 'https://i.ibb.co.com/v4cfF6rb/Whats-App-Image-2026-05-22-at-1-51-22-PM.jpg', 
-      fullSrc: [
-        'https://i.ibb.co.com/7JP841T6/3.jpg'
-      ] 
+      fullSrc: 'https://i.ibb.co.com/v4cfF6rb/Whats-App-Image-2026-05-22-at-1-51-22-PM.jpg'
     },
     ever: { 
       title: 'Everchanging',
       subtitle: 'A new surprise daily',     
       thumbnailSrc: 'https://i.ibb.co.com/BHhvNTqv/Whats-App-Image-2026-05-22-at-1-51-22-PM-1.jpg', 
-      fullSrc: [
-        'https://i.ibb.co.com/vCFxYnGD/Wh.jpg'
-      ] 
+      fullSrc: 'https://i.ibb.co.com/BHhvNTqv/Whats-App-Image-2026-05-22-at-1-51-22-PM-1.jpg'
     },
   },
 };
@@ -700,29 +702,26 @@ async function handleLogin() {
     return;
   }
 
-  let systemEmail = uid;
-  if (!uid.includes('@')) {
-    if (uid === 'ajkingkhan01') {
-      systemEmail = 'ajkingkhan01@gmail.com';
-    } else if (uid === 'ilovekutubaby') {
-      systemEmail = 'ilovekutubaby@sexy.com';
-    } else {
-      systemEmail = `${uid}@gmail.com`; 
-    }
+  // Map username to Firebase email using CONFIG
+  let systemEmail = CONFIG.users[uid] || uid;
+  
+  // If still not an email, assume it's already an email
+  if (!systemEmail.includes('@')) {
+    systemEmail = `${uid}@gmail.com`; 
   }
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, systemEmail, pwd);
     console.log("Logged into Firebase successfully:", userCredential.user.email);
 
-    currentUser = uid;
+    currentUser = systemEmail;  // Store the actual email
     errEl.classList.remove('show');
     document.getElementById('login-page').classList.add('hidden-page');
     
     const app = document.getElementById('app');
     if (app) app.classList.add('visible');
     
-    initApp(uid);
+    initApp(systemEmail);
 
   } catch (error) {
     console.error("Firebase Auth Error:", error.message);
@@ -735,13 +734,14 @@ async function handleLogin() {
 window.handleLogin = handleLogin;
 
 function handleLogout() {
-  /* 🔥 FIREBASE: signOut(auth) */
-  currentUser = null;
-  document.getElementById('login-page').classList.remove('hidden-page');
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('uid').value = '';
-  document.getElementById('pwd').value = '';
-  closeChat();
+  signOut(auth).then(() => {
+    currentUser = null;
+    document.getElementById('login-page').classList.remove('hidden-page');
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('uid').value = '';
+    document.getElementById('pwd').value = '';
+    closeChat();
+  }).catch(error => console.error("Logout error:", error));
 }
 
 document.getElementById('uid').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('pwd').focus(); });
@@ -782,8 +782,9 @@ function buildDaysCounter() {
 }
 
 function buildEverchanging() {
-  const idx = new Date().getDate() % CONFIG.everRotation.length;
-  document.getElementById('ever-icon').textContent = CONFIG.everRotation[idx];
+  // The everchanging icon rotates daily based on current date
+  // This is displayed in the gallery section
+  const idx = new Date().getDate() % (CONFIG.everRotation ? CONFIG.everRotation.length : 10);
   /*
     🔥 FIREBASE: Fetch today's surprise:
     const today = new Date().toISOString().split('T')[0];
@@ -887,32 +888,82 @@ function appendMessage(html) {
   setTimeout(scrollToBottom, 50);
 }
 
-function sendMessage() {
+async function sendMessage() {
   const inp = document.getElementById('chat-text-input');
-  const txt = inp.value.trim(); if (!txt) return;
-  inp.value = ''; inp.style.height = '24px';
+  const txt = inp.value.trim(); 
+  if (!txt || !auth.currentUser) return;
+  
+  inp.value = ''; 
+  inp.style.height = '24px';
 
-  /* 🔥 FIRESTORE: addDoc(collection(db,'messages'), { text:txt, sender:currentUser, timestamp:serverTimestamp() }) */
-  appendMessage(`
-    <div class="msg-row me msg-enter">
-      <div class="msg-bubble-avatar">🐾</div>
-      <div class="msg-content">
-        <div class="msg-bubble">${escHtml(txt)}</div>
-        <span class="msg-time">${getTime()}</span>
-      </div>
-    </div>`);
+  try {
+    // Send to Firestore
+    await addDoc(collection(db, 'messages'), { 
+      text: txt, 
+      sender: currentUser || auth.currentUser.email, 
+      timestamp: serverTimestamp() 
+    });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    appendMessage(`<div class="msg-row me"><div class="msg-content"><div class="msg-bubble" style="color:#ff6b7a;">Failed to send ❌</div></div></div>`);
+  }
+}
+
+// Listen for new messages in real-time from Firestore
+function listenForMessages() {
+  try {
+    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, (snapshot) => {
+      const chatWindow = document.getElementById('chat-messages');
+      if (!chatWindow) return;
+      
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          const senderEmail = data.sender;
+          const isSender = senderEmail === currentUser;
+          const className = isSender ? 'me' : 'her';
+          
+          // Get user info from CONFIG
+          const userInfo = CONFIG.userNames[senderEmail] || { 
+            name: senderEmail.split('@')[0], 
+            emoji: isSender ? '🐾' : '🌸',
+            role: isSender ? 'him' : 'her'
+          };
+          
+          let html = `
+            <div class="msg-row ${className} msg-enter">
+              <div class="msg-bubble-avatar">${userInfo.emoji}</div>
+              <div class="msg-content">
+                ${!isSender ? `<span class="msg-name">${userInfo.name}</span>` : ''}
+                <div class="msg-bubble">${escHtml(data.text || '')}</div>
+                <span class="msg-time">${getTime()}</span>
+              </div>
+            </div>`;
+          
+          appendMessage(html);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error setting up message listener:", error);
+  }
 }
 
 function sendSticker(emoji) {
-  /* 🔥 FIRESTORE: addDoc(collection(db,'messages'), { sticker:emoji, sender:currentUser, timestamp:serverTimestamp() }) */
-  appendMessage(`
-    <div class="msg-row me msg-enter">
-      <div class="msg-bubble-avatar">🐾</div>
-      <div class="msg-content">
-        <div class="msg-bubble msg-sticker">${emoji}</div>
-        <span class="msg-time">${getTime()}</span>
-      </div>
-    </div>`);
+  if (!auth.currentUser) return;
+  
+  try {
+    // Send sticker to Firestore
+    addDoc(collection(db, 'messages'), { 
+      text: emoji,  // Store as text field for consistency
+      sender: currentUser || auth.currentUser.email, 
+      timestamp: serverTimestamp(),
+      isSticker: true
+    });
+  } catch (error) {
+    console.error("Error sending sticker:", error);
+  }
 }
 
 function toggleStickers() {
@@ -1007,7 +1058,7 @@ document.addEventListener('keydown', e => {
 // ── FIREBASE PRODUCTION SETUP ──────────────────────────
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
@@ -1024,77 +1075,18 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth        = getAuth(firebaseApp);
 const db          = getFirestore(firebaseApp);
 const storage     = getStorage(firebaseApp);
-// ── CHAT ENGINE LOGIC ───────────────────────────────────
 
-// 1. SEND A NEW MESSAGE
-async function sendMessage() {
-  // Looks for the message text box in your template layout
-  const messageInput = document.getElementById('chat-input') || document.querySelector('.chat-input-area input') || document.getElementById('messageInputText');
-  if (!messageInput) return;
-  
-  const text = messageInput.value.trim();
-
-  // Make sure text isn't empty and a user is logged in
-  if (text !== "" && auth.currentUser) {
-    try {
-      // Saves the message straight into your Firestore cloud database
-      await addDoc(collection(db, "messages"), {
-        sender: auth.currentUser.email,
-        message: text,
-        timestamp: serverTimestamp() // Uses Firebase cloud server time for perfect syncing
-      });
-      messageInput.value = ""; // Clears the input box so you can type your next message
-    } catch (error) {
-      console.error("Error sending message: ", error);
-    }
-  }
-}
-
-// 2. LISTEN FOR INCOMING MESSAGES LIVE (REAL-TIME SNAPSHOT)
-function listenForMessages() {
-  // Queries your database messages sorted by time
-  const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
-  
-  // This listener stays open; the exact millisecond your GF sends a message, this fires
-  onSnapshot(q, (snapshot) => {
-    // MATCHED REPO ID: Changed 'chatDisplayArea' to your exact template 'chat-messages'
-    const chatWindow = document.getElementById('chat-messages'); 
-    if (!chatWindow) return;
-    
-    chatWindow.innerHTML = ""; // Clears the old window content before printing updates
-    
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const messageElement = document.createElement('div');
-      
-      // Assigns different CSS styling classes depending on who sent the text
-      if (data.sender === auth.currentUser.email) {
-        messageElement.className = "message message-sent";
-      } else {
-        messageElement.className = "message message-received";
-      }
-      
-      messageElement.textContent = data.message;
-      chatWindow.appendChild(messageElement);
-    });
-    
-    // Smoothly scrolls your chat window to the bottom to display the latest message
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  });
-}
-
-// 3. START LISTENING WHEN LOGIN IS CONFIRMED
-// This checks if you are securely signed into the site before activating the chat stream
+// ── INITIALIZE APP WHEN USER LOGS IN ───────────────
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("Logged in as:", user.email);
-    listenForMessages(); // Starts the live connection
+    listenForMessages(); // Starts the live connection to listen for new messages
   } else {
     console.log("No user signed in yet.");
   }
 });
 
-// Expose sendMessage to your HTML window so your send buttons can trigger it
+// Expose sendMessage to window so button onclick can trigger it
 window.sendMessage = sendMessage;
 </script>
 </body>
