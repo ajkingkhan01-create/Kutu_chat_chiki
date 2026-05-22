@@ -333,7 +333,7 @@
   <div class="login-card">
     <div class="login-emblem">
       <span class="hearts">🌹</span>
-      <h1>Enter <em>Our World</em></h1>
+      <h1>Enter <em>MeerAtik Forever</em></h1>
       <p>Private &amp; Exclusive</p>
     </div>
     <div class="login-field">
@@ -356,98 +356,96 @@
 <!-- ══════════ MAIN APP ══════════ -->
 <div id="app">
   <nav>
-    <div class="nav-logo">us<span>♡</span>always</div>
+    <div class="nav-logo">Meera<span>♡</span>Atik</div>
     <div class="nav-right">
       <span class="nav-date" id="nav-date"></span>
       <span class="nav-logout" onclick="handleLogout()">Leave</span>
     </div>
   </nav>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-photo-side">
+    <div class="hero-photo-container">
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-photo-side">
-      <div class="hero-photo-container">
-        <!--
-          ✦ Replace this div with: <img src="YOUR_PHOTO_URL" alt="Us" />
-          🔥 Firebase Storage: const url = await getDownloadURL(ref(storage,'hero.jpg')); then set as src
-        -->
-        <div class="hero-photo-placeholder">
-          <div class="ph-icon">📷</div>
-          <p>Your photo here</p>
-        </div>
-      </div>
-    </div>
-    <div class="hero-text-side fade-in-up" style="animation-delay:0.3s">
-      <div class="hero-eyebrow">Our Story</div>
-      <h1 class="hero-title">You &amp; Me,<br><em>Always.</em></h1>
-      <blockquote class="hero-quote">
-        "In all the world, there is no heart for me like yours. In all the world, there is no love for you like mine."
-      </blockquote>
-      <div class="days-counter" id="days-counter"></div>
-    </div>
-  </section>
+      <img 
+        src="https://i.ibb.co.com/WvwXqfhY/o.png" 
+        alt="Us"
+      />
 
+    </div>
+  </div>
+
+  <div class="hero-text-side fade-in-up" style="animation-delay:0.3s">
+    <div class="hero-eyebrow">For my beloved</div>
+
+    <h1 class="hero-title">
+      Meera &amp; Atik,<br><em>Forever.</em>
+    </h1>
+
+    <blockquote class="hero-quote">
+      "তীব্র বেদনা অথবা আগাদ আনন্দে অনুভূতি শুধু একটাই যে আতিক তার মীরাকে অনেক ভালোবাসে"
+    </blockquote>
+
+    <div class="days-counter" id="days-counter"></div>
+  </div>
+</section>
   <!-- GALLERY -->
-  <section class="gallery-section">
-    <div class="section-label">Our Gallery</div>
-    <h2 class="section-title">Moments <em>Together</em></h2>
-    <div class="gallery-grid">
+ <div class="gallery-grid">
 
-      <div class="gallery-card fade-in-up" style="animation-delay:0.1s" onclick="openLightbox('youme')">
-        <div class="gallery-card-inner" style="position:relative;width:100%;height:100%;">
-          <div class="gallery-card-bg">
-            <!-- 🔥 FIREBASE: Set style="background-image:url('DOWNLOAD_URL');background-size:cover" -->
-            <span class="card-placeholder-icon">💑</span>
-          </div>
-          <div class="gallery-card-overlay">
-            <span class="card-tag">Chapter 01</span>
-            <span class="card-title">You &amp; Me</span>
-            <span class="card-subtitle">Our pictures together</span>
-          </div>
-        </div>
+  <!-- Chapter 01 -->
+  <div class="gallery-card fade-in-up" style="animation-delay:0.1s" onclick="openLightbox('youme')">
+    <div class="gallery-card-inner" style="position:relative; width:100%; height:100%;">
+      <!-- Changed link format below -->
+      <div class="gallery-card-bg" style="background-image:url('https://i.ibb.co.com/S71csQxZ/Cover.jpg'); background-size:cover; background-position:center; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      
+      <div class="gallery-card-overlay">
+        <span class="card-tag">Chapter 01</span>
+        <span class="card-title">You &amp; Me</span>
+        <span class="card-subtitle">Our pictures together</span>
       </div>
-
-      <div class="gallery-card fade-in-up" style="animation-delay:0.2s" onclick="openLightbox('kutu')">
-        <div class="gallery-card-inner" style="position:relative;width:100%;height:100%;">
-          <div class="gallery-card-bg">
-            <span class="card-placeholder-icon">🌸</span>
-          </div>
-          <div class="gallery-card-overlay">
-            <span class="card-tag">Chapter 02</span>
-            <span class="card-title">Kutu Baby</span>
-            <span class="card-subtitle">Her edited pictures</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="gallery-card fade-in-up" style="animation-delay:0.3s" onclick="openLightbox('chiki')">
-        <div class="gallery-card-inner" style="position:relative;width:100%;height:100%;">
-          <div class="gallery-card-bg">
-            <span class="card-placeholder-icon">✨</span>
-          </div>
-          <div class="gallery-card-overlay">
-            <span class="card-tag">Chapter 03</span>
-            <span class="card-title">Chiki Baby</span>
-            <span class="card-subtitle">AI-generated video clips</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="gallery-card fade-in-up" style="animation-delay:0.4s" onclick="openLightbox('ever')">
-        <div class="gallery-card-inner" style="position:relative;width:100%;height:100%;">
-          <div class="gallery-card-bg">
-            <span class="card-placeholder-icon" id="ever-icon">🌙</span>
-          </div>
-          <div class="gallery-card-overlay">
-            <span class="card-tag">Chapter 04</span>
-            <span class="card-title">Everchanging</span>
-            <span class="card-subtitle">A new surprise daily</span>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </section>
+  </div>
+
+  <!-- Chapter 02 -->
+  <div class="gallery-card fade-in-up" style="animation-delay:0.2s" onclick="openLightbox('kutu')">
+    <div class="gallery-card-inner" style="position:relative; width:100%; height:100%;">
+      <div class="gallery-card-bg" style="background-image:url('https://i.ibb.co.com/8gsrkjxH/Adobe-Express-file-1.jpg'); background-size:cover; background-position:center; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      
+      <div class="gallery-card-overlay">
+        <span class="card-tag">Chapter 02</span>
+        <span class="card-title">Kutu Baby</span>
+        <span class="card-subtitle">Her edited pictures</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chapter 03 -->
+  <div class="gallery-card fade-in-up" style="animation-delay:0.3s" onclick="openLightbox('chiki')">
+    <div class="gallery-card-inner" style="position:relative; width:100%; height:100%;">
+      <div class="gallery-card-bg" style="background-image:url('https://i.ibb.co.com/v4cfF6rb/Whats-App-Image-2026-05-22-at-1-51-22-PM.jpg'); background-size:cover; background-position:center; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      
+      <div class="gallery-card-overlay">
+        <span class="card-tag">Chapter 03</span>
+        <span class="card-title">Chiki Baby</span>
+        <span class="card-subtitle">AI-generated video clips</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chapter 04 -->
+  <div class="gallery-card fade-in-up" style="animation-delay:0.4s" onclick="openLightbox('ever')">
+    <div class="gallery-card-inner" style="position:relative; width:100%; height:100%;">
+      <div class="gallery-card-bg" style="background-image:url('https://i.ibb.co.com/BHhvNTqv/Whats-App-Image-2026-05-22-at-1-51-22-PM-1.jpg'); background-size:cover; background-position:center; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      
+      <div class="gallery-card-overlay">
+        <span class="card-tag">Chapter 04</span>
+        <span class="card-title">Everchanging</span>
+        <span class="card-subtitle">A new surprise daily</span>
+      </div>
+    </div>
+  </div>
+
+</div>
 
   <!-- CHAT CTA -->
   <div class="chat-cta-section">
@@ -583,24 +581,50 @@ const CONFIG = {
   // ── Auth (replace with Firebase Auth later) ──────────
   users: {
     'chiki': 'kutu',
-    'kutu':  'chiki',
+    'Meeratik': 'putuputu',
   },
 
   // ── Relationship Start Date ───────────────────────────
-  startDate: '2024-02-14',   // Change to your actual date
+  startDate: '2025-07-14',   // Change to your actual date
 
-  // ── Gallery (add your Firebase Storage URLs) ──────────
-  // thumbnailSrc: fast-loading small image
-  // fullSrc: full-resolution for lightbox
+  // ── Gallery ───────────────────────────────────────────
   gallery: {
-    youme: { title:'You & Me',    subtitle:'Our pictures together',    thumbnailSrc:null, fullSrc:null },
-    kutu:  { title:'Kutu Baby',   subtitle:'Edited pictures of her',   thumbnailSrc:null, fullSrc:null },
-    chiki: { title:'Chiki Baby',  subtitle:'AI-generated video clips', thumbnailSrc:null, fullSrc:null },
-    ever:  { title:'Everchanging',subtitle:'A new surprise daily',     thumbnailSrc:null, fullSrc:null },
+    youme: { 
+      title: 'You & Me',    
+      subtitle: 'Our pictures together',    
+      thumbnailSrc: 'https://i.ibb.co.com/S71csQxZ/Cover.jpg', 
+      fullSrc: [
+        'https://i.ibb.co.com/S71csQxZ/Cover.jpg',
+        'https://i.ibb.co.com/gLQBpJ8Y/2.jpg',
+        'https://i.ibb.co.com/YOUR-THIRD-PHOTO-URL.jpg'
+      ] 
+    },
+    kutu: { 
+      title: 'Kutu Baby',   
+      subtitle: 'Edited pictures of her',   
+      thumbnailSrc: 'https://i.ibb.co.com/8gsrkjxH/Adobe-Express-file-1.jpg', 
+      fullSrc: [
+        'https://i.ibb.co.com/67P9tN6S/IMG-9593.jpg',
+        'https://i.ibb.co.com/YOUR-KUTU-PHOTO-2.jpg'
+      ] 
+    },
+    chiki: { 
+      title: 'Chiki Baby',  
+      subtitle: 'AI-generated video clips', 
+      thumbnailSrc: 'https://i.ibb.co.com/v4cfF6rb/Whats-App-Image-2026-05-22-at-1-51-22-PM.jpg', 
+      fullSrc: [
+        'https://i.ibb.co.com/7JP841T6/3.jpg'
+      ] 
+    },
+    ever: { 
+      title: 'Everchanging',
+      subtitle: 'A new surprise daily',     
+      thumbnailSrc: 'https://i.ibb.co.com/BHhvNTqv/Whats-App-Image-2026-05-22-at-1-51-22-PM-1.jpg', 
+      fullSrc: [
+        'https://i.ibb.co.com/vCFxYnGD/Wh.jpg'
+      ] 
+    },
   },
-
-  // ── Everchanging card daily rotation ──────────────────
-  everRotation: ['🌙','🌸','💫','🌹','✨','🦋','💗','🌊'],
 };
 
 /* ══════════════════════════════════════════════════════
