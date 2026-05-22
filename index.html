@@ -980,28 +980,98 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeLightbox(); closeChat(); }
 });
 
-/* ══════════════════════════════════════════════════════
-   FIREBASE SETUP TEMPLATE — Uncomment when ready
+// ── FIREBASE PRODUCTION SETUP ──────────────────────────
 
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp, getDoc, doc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey:             "AIzaSyAKc7JGcai01eNDg32KnlD0KDpQXOuNYEw",
+  authDomain:         "kutubabychat.firebaseapp.com",
+  projectId:          "kutubabychat",
+  storageBucket:      "kutubabychat.firebasestorage.app",
+  messagingSenderId:  "910556420240",
+  appId:              "1:910556420240:web:bd1bd4561659b1abbea015",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth        = getAuth(firebaseApp);
 const db          = getFirestore(firebaseApp);
 const storage     = getStorage(firebaseApp);
-══════════════════════════════════════════════════════ */
+// ── CHAT ENGINE LOGIC ───────────────────────────────────
+
+// 1. SEND A NEW MESSAGE
+async function sendMessage() {
+  // Looks for the message text box in your template layout
+  const messageInput = document.getElementById('chat-input') || document.querySelector('.chat-input-area input') || document.getElementById('messageInputText');
+  if (!messageInput) return;
+  
+  const text = messageInput.value.trim();
+
+  // Make sure text isn't empty and a user is logged in
+  if (text !== "" && auth.currentUser) {
+    try {
+      // Saves the message straight into your Firestore cloud database
+      await addDoc(collection(db, "messages"), {
+        sender: auth.currentUser.email,
+        message: text,
+        timestamp: serverTimestamp() // Uses Firebase cloud server time for perfect syncing
+      });
+      messageInput.value = ""; // Clears the input box so you can type your next message
+    } catch (error) {
+      console.error("Error sending message: ", error);
+    }
+  }
+}
+
+// 2. LISTEN FOR INCOMING MESSAGES LIVE (REAL-TIME SNAPSHOT)
+function listenForMessages() {
+  // Queries your database messages sorted by time
+  const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+  
+  // This listener stays open; the exact millisecond your GF sends a message, this fires
+  onSnapshot(q, (snapshot) => {
+    // MATCHED REPO ID: Changed 'chatDisplayArea' to your exact template 'chat-messages'
+    const chatWindow = document.getElementById('chat-messages'); 
+    if (!chatWindow) return;
+    
+    chatWindow.innerHTML = ""; // Clears the old window content before printing updates
+    
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const messageElement = document.createElement('div');
+      
+      // Assigns different CSS styling classes depending on who sent the text
+      if (data.sender === auth.currentUser.email) {
+        messageElement.className = "message message-sent";
+      } else {
+        messageElement.className = "message message-received";
+      }
+      
+      messageElement.textContent = data.message;
+      chatWindow.appendChild(messageElement);
+    });
+    
+    // Smoothly scrolls your chat window to the bottom to display the latest message
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  });
+}
+
+// 3. START LISTENING WHEN LOGIN IS CONFIRMED
+// This checks if you are securely signed into the site before activating the chat stream
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Logged in as:", user.email);
+    listenForMessages(); // Starts the live connection
+  } else {
+    console.log("No user signed in yet.");
+  }
+});
+
+// Expose sendMessage to your HTML window so your send buttons can trigger it
+window.sendMessage = sendMessage;
 </script>
 </body>
-</html>s
+</html>
