@@ -337,7 +337,7 @@
       <p>Private &amp; Exclusive</p>
     </div>
     <div class="login-field">
-      <label for="uid">Your Name</label>
+      <label for="uid">your name</label>
       <input id="uid" type="text" placeholder="Who are you, my love?" autocomplete="off" />
     </div>
     <div class="login-field">
@@ -682,33 +682,57 @@ const CONFIG = {
   })();
 })();
 
-/* ══════════════════════════════════════════════════════
-   AUTH
-   🔥 FIREBASE HOOK: Replace with:
-   signInWithEmailAndPassword(auth, email, password)
-     .then(u => { showApp(u.email); })
-     .catch(() => { showLoginError(); });
-══════════════════════════════════════════════════════ */
+// ── FIREBASE AUTHENTICATION LOGIC ───────────────────────
 let currentUser = null;
 
-function handleLogin() {
-  const uid = document.getElementById('uid').value.trim().toLowerCase();
-  const pwd = document.getElementById('pwd').value.trim().toLowerCase();
+async function handleLogin() {
+  const uidInput = document.getElementById('uid');
+  const pwdInput = document.getElementById('pwd');
   const errEl = document.getElementById('login-error');
 
-  if (CONFIG.users[uid] && CONFIG.users[uid] === pwd) {
+  if (!uidInput || !pwdInput || !errEl) return;
+
+  const uid = uidInput.value.trim().toLowerCase();
+  const pwd = pwdInput.value.trim(); 
+
+  if (uid === "" || pwd === "") {
+    errEl.classList.add('show');
+    return;
+  }
+
+  let systemEmail = uid;
+  if (!uid.includes('@')) {
+    if (uid === 'ajkingkhan01') {
+      systemEmail = 'ajkingkhan01@gmail.com';
+    } else if (uid === 'ilovekutubaby') {
+      systemEmail = 'ilovekutubaby@sexy.com';
+    } else {
+      systemEmail = `${uid}@gmail.com`; 
+    }
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, systemEmail, pwd);
+    console.log("Logged into Firebase successfully:", userCredential.user.email);
+
     currentUser = uid;
     errEl.classList.remove('show');
     document.getElementById('login-page').classList.add('hidden-page');
+    
     const app = document.getElementById('app');
-    app.classList.add('visible');
+    if (app) app.classList.add('visible');
+    
     initApp(uid);
-  } else {
+
+  } catch (error) {
+    console.error("Firebase Auth Error:", error.message);
     errEl.classList.add('show');
-    document.getElementById('pwd').value = '';
-    document.getElementById('pwd').focus();
+    pwdInput.value = '';
+    pwdInput.focus();
   }
 }
+
+window.handleLogin = handleLogin;
 
 function handleLogout() {
   /* 🔥 FIREBASE: signOut(auth) */
