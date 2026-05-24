@@ -559,7 +559,7 @@
           onkeydown="handleInputKeydown(event)" oninput="autoResizeInput(this)"></textarea>
         <button class="send-btn" onclick="sendMessage()" title="Send">➤</button>
       </div>
-      <input type="file" id="file-input" accept="image/*" onchange="handleFileUpload(event)" />
+      <input type="file" id="file-input" accept="image/*,audio/*" onchange="handleFileUpload(event)" />
     </div>
   </div>
 </div>
@@ -698,6 +698,7 @@ async function handleLogin() {
   const pwd = pwdInput.value.trim(); 
 
   if (uid === "" || pwd === "") {
+    errEl.textContent = "Please enter both username and password";
     errEl.classList.add('show');
     return;
   }
@@ -710,9 +711,15 @@ async function handleLogin() {
     systemEmail = `${uid}@gmail.com`; 
   }
 
+  console.log("🔐 Login attempt:", { uid, systemEmail, pwd: '***' });
+
   try {
+    errEl.textContent = "Logging in...";
+    errEl.classList.add('show');
+    errEl.style.color = '#f0b8bc';
+    
     const userCredential = await signInWithEmailAndPassword(auth, systemEmail, pwd);
-    console.log("Logged into Firebase successfully:", userCredential.user.email);
+    console.log("✅ Logged into Firebase successfully:", userCredential.user.email);
 
     currentUser = systemEmail;  // Store the actual email
     errEl.classList.remove('show');
@@ -724,7 +731,22 @@ async function handleLogin() {
     initApp(systemEmail);
 
   } catch (error) {
-    console.error("Firebase Auth Error:", error.message);
+    console.error("❌ Firebase Auth Error:", error.code, error.message);
+    errEl.style.color = '#f0b8bc';
+    
+    // More helpful error messages
+    if (error.code === 'auth/user-not-found') {
+      errEl.textContent = `User not found: ${systemEmail}`;
+    } else if (error.code === 'auth/wrong-password') {
+      errEl.textContent = `Wrong password for ${systemEmail}`;
+    } else if (error.code === 'auth/invalid-email') {
+      errEl.textContent = `Invalid email: ${systemEmail}`;
+    } else if (error.code === 'auth/invalid-credential') {
+      errEl.textContent = `Invalid credentials. Check username & password`;
+    } else {
+      errEl.textContent = `Error: ${error.message}`;
+    }
+    
     errEl.classList.add('show');
     pwdInput.value = '';
     pwdInput.focus();
@@ -734,6 +756,15 @@ async function handleLogin() {
 window.handleLogin = handleLogin;
 
 function handleLogout() {
+  console.log("🔐 Logging out...");
+  
+  // Clean up message listener
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    console.log("🧹 Message listener cleaned up");
+  }
+  messageListenerActive = false;
+  
   signOut(auth).then(() => {
     currentUser = null;
     document.getElementById('login-page').classList.remove('hidden-page');
@@ -741,7 +772,8 @@ function handleLogout() {
     document.getElementById('uid').value = '';
     document.getElementById('pwd').value = '';
     closeChat();
-  }).catch(error => console.error("Logout error:", error));
+    console.log("✅ Logged out successfully");
+  }).catch(error => console.error("❌ Logout error:", error));
 }
 
 document.getElementById('uid').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('pwd').focus(); });
@@ -751,10 +783,18 @@ document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='En
    APP INIT
 ══════════════════════════════════════════════════════ */
 function initApp(uid) {
+  console.log("🚀 Initializing app for:", uid);
+  // Clear previous messages on new login
+  const chatWindow = document.getElementById('chat-messages');
+  if (chatWindow) {
+    chatWindow.innerHTML = '<div class="msg-date-divider">Today ✦ Our Conversations</div>';
+    console.log("🧹 Chat cleared for new login");
+  }
   setNavDate();
   buildDaysCounter();
   buildEverchanging();
   buildWaveform();
+  console.log("✅ App initialized");
 }
 
 function setNavDate() {
@@ -852,13 +892,50 @@ function closeLightboxOnBg(e) {
    });
 ══════════════════════════════════════════════════════ */
 function openChat() {
-  document.getElementById('chat-panel').classList.add('open');
+  console.log("🔓 Opening chat panel...");
+  const chatPanel = document.getElementById('chat-panel');
+  const app = document.getElementById('app');
+  
+  if (!chatPanel) {
+    console.error("❌ Chat panel element (#chat-panel) not found in DOM!");
+    return;
+  }
+  
+  if (!app) {
+    console.error("❌ App element (#app) not found in DOM!");
+    return;
+  }
+  
+  console.log("📊 Chat panel current state:", {
+    class: chatPanel.className,
+    display: chatPanel.style.display,
+    zIndex: window.getComputedStyle(chatPanel).zIndex,
+  });
+  
+  console.log("📊 App current state:", {
+    class: app.className,
+    opacity: window.getComputedStyle(app).opacity,
+  });
+  
+  // Make sure app is visible
+  if (!app.classList.contains('visible')) {
+    console.warn("⚠️ App is not visible! Adding visible class...");
+    app.classList.add('visible');
+  }
+  
+  chatPanel.classList.add('open');
   document.body.style.overflow = 'hidden';
+  console.log("✅ Chat opened. New class:", chatPanel.className);
   setTimeout(scrollToBottom, 100);
 }
 
 function closeChat() {
-  document.getElementById('chat-panel').classList.remove('open');
+  console.log("🔒 Closing chat panel...");
+  const chatPanel = document.getElementById('chat-panel');
+  if (chatPanel) {
+    chatPanel.classList.remove('open');
+    console.log("✅ Chat closed. Current class:", chatPanel.className);
+  }
   document.body.style.overflow = '';
 }
 
@@ -891,10 +968,15 @@ function appendMessage(html) {
 async function sendMessage() {
   const inp = document.getElementById('chat-text-input');
   const txt = inp.value.trim(); 
-  if (!txt || !auth.currentUser) return;
+  if (!txt || !auth.currentUser) {
+    console.warn("⚠️ Cannot send: text empty or not logged in");
+    return;
+  }
   
   inp.value = ''; 
   inp.style.height = '24px';
+
+  console.log("📤 Sending message from:", currentUser);
 
   try {
     // Send to Firestore
@@ -903,23 +985,42 @@ async function sendMessage() {
       sender: currentUser || auth.currentUser.email, 
       timestamp: serverTimestamp() 
     });
+    console.log("✅ Message sent successfully");
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.error("❌ Error sending message:", error);
     appendMessage(`<div class="msg-row me"><div class="msg-content"><div class="msg-bubble" style="color:#ff6b7a;">Failed to send ❌</div></div></div>`);
   }
 }
 
+// ── Chat Global State ──────────────────────────────
+let messageListenerActive = false;
+let unsubscribeMessages = null;
+
 // Listen for new messages in real-time from Firestore
 function listenForMessages() {
+  // Prevent multiple listeners
+  if (messageListenerActive) {
+    console.log("📡 Message listener already active, skipping...");
+    return;
+  }
+  
+  console.log("📡 Setting up message listener for currentUser:", currentUser);
+  messageListenerActive = true;
+  
   try {
     const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
-    onSnapshot(q, (snapshot) => {
+    unsubscribeMessages = onSnapshot(q, (snapshot) => {
+      console.log("📨 Snapshot received with", snapshot.docs.length, "messages");
       const chatWindow = document.getElementById('chat-messages');
-      if (!chatWindow) return;
+      if (!chatWindow) {
+        console.error("❌ Chat messages element not found!");
+        return;
+      }
       
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const data = change.doc.data();
+          console.log("💬 New message from:", data.sender);
           const senderEmail = data.sender;
           const isSender = senderEmail === currentUser;
           const className = isSender ? 'me' : 'her';
@@ -931,12 +1032,36 @@ function listenForMessages() {
             role: isSender ? 'him' : 'her'
           };
           
+          let mediaContent = '';
+          
+          // Handle image messages
+          if (data.imgUrl) {
+            mediaContent = `<img src="${data.imgUrl}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; margin-top:6px;">`;
+          }
+          // Handle audio messages
+          else if (data.audioUrl) {
+            mediaContent = `
+              <div class="msg-audio" style="margin-top:6px;">
+                <button class="audio-play-btn" onclick="this.nextElementSibling.play()">▶</button>
+                <audio style="display:none;" src="${data.audioUrl}"></audio>
+                <div class="audio-waveform" id="wave-${Date.now()}">
+                  <span style="height:30%"></span>
+                  <span style="height:60%"></span>
+                  <span style="height:45%"></span>
+                  <span style="height:80%"></span>
+                  <span style="height:55%"></span>
+                  <span style="height:40%"></span>
+                </div>
+                <span style="font-size:0.72rem;opacity:0.5">Audio</span>
+              </div>`;
+          }
+          
           let html = `
             <div class="msg-row ${className} msg-enter">
               <div class="msg-bubble-avatar">${userInfo.emoji}</div>
               <div class="msg-content">
                 ${!isSender ? `<span class="msg-name">${userInfo.name}</span>` : ''}
-                <div class="msg-bubble">${escHtml(data.text || '')}</div>
+                <div class="msg-bubble">${data.imgUrl || data.audioUrl ? '' : escHtml(data.text || '')}${mediaContent}</div>
                 <span class="msg-time">${getTime()}</span>
               </div>
             </div>`;
@@ -946,7 +1071,8 @@ function listenForMessages() {
       });
     });
   } catch (error) {
-    console.error("Error setting up message listener:", error);
+    console.error("❌ Error setting up message listener:", error);
+    messageListenerActive = false;
   }
 }
 
@@ -971,73 +1097,157 @@ function toggleStickers() {
 }
 
 let recording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
 function toggleRecording() {
   recording = !recording;
   const btn = document.getElementById('mic-btn');
+  
   if (recording) {
-    btn.style.color='#ff6b7a'; btn.style.opacity='1';
-    /*
-      🔥 MediaRecorder + Firebase Storage hook:
-      navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
-        const rec = new MediaRecorder(stream);
-        const chunks = [];
-        rec.ondataavailable = e => chunks.push(e.data);
-        rec.onstop = async () => {
-          const blob = new Blob(chunks, {type:'audio/webm'});
+    console.log("🎤 Starting audio recording...");
+    btn.style.color='#ff6b7a'; 
+    btn.style.opacity='1';
+    audioChunks = [];
+    
+    navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
+      mediaRecorder = new MediaRecorder(stream);
+      
+      mediaRecorder.ondataavailable = (e) => {
+        audioChunks.push(e.data);
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, {type:'audio/webm'});
+        console.log("✅ Recording complete, blob size:", blob.size);
+        
+        try {
+          // Upload to Firebase Storage
           const storageRef = ref(storage, 'audio/'+Date.now()+'.webm');
-          const snap = await uploadBytes(storageRef, blob);
-          const url = await getDownloadURL(snap.ref);
-          addDoc(collection(db,'messages'), { audioUrl:url, sender:currentUser, timestamp:serverTimestamp() });
-        };
-        rec.start();
-        setTimeout(() => rec.stop(), 5000); // max 5s demo
-      });
-    */
-    setTimeout(() => {
-      recording = false; btn.style.color=''; btn.style.opacity='';
-      const h = Array.from({length:20}, ()=>Math.floor(Math.random()*70+15));
+          const snapshot = await uploadBytes(storageRef, blob);
+          const audioUrl = await getDownloadURL(snapshot.ref);
+          
+          console.log("✅ Audio uploaded, URL:", audioUrl);
+          
+          // Send to Firestore with audio URL
+          await addDoc(collection(db, 'messages'), { 
+            text: '[Voice Message]',
+            audioUrl: audioUrl,
+            sender: currentUser, 
+            timestamp: serverTimestamp() 
+          });
+          console.log("✅ Audio message sent to Firestore");
+        } catch (error) {
+          console.error("❌ Error uploading audio:", error);
+          appendMessage(`
+            <div class="msg-row me msg-enter">
+              <div class="msg-bubble-avatar">🐾</div>
+              <div class="msg-content">
+                <div class="msg-bubble" style="color:#ff6b7a;">Failed to send voice ❌</div>
+              </div>
+            </div>`);
+        }
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start();
+      
+      // Stop recording after 3 seconds
+      setTimeout(() => {
+        if (mediaRecorder && recording) {
+          mediaRecorder.stop();
+          recording = false;
+          btn.style.color='';
+          btn.style.opacity='';
+          console.log("⏹️ Recording stopped");
+        }
+      }, 3000);
+    }).catch(error => {
+      console.error("❌ Microphone access denied:", error);
+      btn.style.color='';
+      btn.style.opacity='';
+      recording = false;
       appendMessage(`
         <div class="msg-row me msg-enter">
           <div class="msg-bubble-avatar">🐾</div>
           <div class="msg-content">
-            <div class="msg-bubble">
-              <div class="msg-audio">
-                <button class="audio-play-btn">▶</button>
-                <div class="audio-waveform">${h.map(v=>`<span style="height:${v}%"></span>`).join('')}</div>
-                <span style="font-size:0.72rem;opacity:0.5">0:03</span>
-              </div>
-            </div>
-            <span class="msg-time">${getTime()}</span>
+            <div class="msg-bubble" style="color:#ff6b7a;">Microphone access denied ❌</div>
           </div>
         </div>`);
-    }, 3000);
+    });
   } else {
-    btn.style.color=''; btn.style.opacity='';
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      console.log("⏹️ Recording stopped manually");
+    }
+    btn.style.color='';
+    btn.style.opacity='';
   }
 }
 
-function handleFileUpload(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    /*
-      🔥 FIREBASE STORAGE: Upload then save URL to Firestore:
-      const sRef = ref(storage, 'chat-images/'+Date.now()+'-'+file.name);
-      uploadBytes(sRef, file).then(snap => getDownloadURL(snap.ref))
-        .then(url => addDoc(collection(db,'messages'), { imgUrl:url, sender:currentUser, timestamp:serverTimestamp() }));
-    */
+async function handleFileUpload(e) {
+  const file = e.target.files[0]; 
+  if (!file || !auth.currentUser) {
+    console.warn("⚠️ No file or user not logged in");
+    return;
+  }
+  
+  const isAudio = file.type.startsWith('audio/');
+  const isImage = file.type.startsWith('image/');
+  
+  if (!isAudio && !isImage) {
     appendMessage(`
       <div class="msg-row me msg-enter">
         <div class="msg-bubble-avatar">🐾</div>
         <div class="msg-content">
-          <div class="msg-bubble" style="padding:6px">
-            <img src="${ev.target.result}" class="chat-img-preview" alt="Image" />
-          </div>
+          <div class="msg-bubble" style="color:#ff6b7a;">Only images and audio files are allowed ❌</div>
           <span class="msg-time">${getTime()}</span>
         </div>
       </div>`);
-  };
-  reader.readAsDataURL(file);
+    e.target.value = '';
+    return;
+  }
+  
+  const fileType = isAudio ? 'audio' : 'image';
+  console.log(`📤 Uploading ${fileType}:`, file.name);
+  
+  try {
+    // Upload to Firebase Storage
+    const folderName = isAudio ? 'chat-audio' : 'chat-images';
+    const sRef = ref(storage, `${folderName}/${Date.now()}-${file.name}`);
+    const snapshot = await uploadBytes(sRef, file);
+    const fileUrl = await getDownloadURL(snapshot.ref);
+    
+    console.log(`✅ ${fileType} uploaded, URL:`, fileUrl);
+    
+    // Send to Firestore with image or audio URL
+    const messageData = { 
+      text: isAudio ? '[Voice Message]' : '[Image]',
+      sender: currentUser, 
+      timestamp: serverTimestamp() 
+    };
+    
+    if (isAudio) {
+      messageData.audioUrl = fileUrl;
+    } else {
+      messageData.imgUrl = fileUrl;
+    }
+    
+    await addDoc(collection(db, 'messages'), messageData);
+    console.log(`✅ ${fileType} message sent to Firestore`);
+  } catch (error) {
+    console.error(`❌ Error uploading ${fileType}:`, error);
+    appendMessage(`
+      <div class="msg-row me msg-enter">
+        <div class="msg-bubble-avatar">🐾</div>
+        <div class="msg-content">
+          <div class="msg-bubble" style="color:#ff6b7a;">Failed to upload ${fileType} ❌</div>
+          <span class="msg-time">${getTime()}</span>
+        </div>
+      </div>`);
+  }
   e.target.value = '';
 }
 
@@ -1079,15 +1289,26 @@ const storage     = getStorage(firebaseApp);
 // ── INITIALIZE APP WHEN USER LOGS IN ───────────────
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    console.log("Logged in as:", user.email);
+    console.log("🟢 Auth state changed - User logged in:", user.email);
     listenForMessages(); // Starts the live connection to listen for new messages
   } else {
-    console.log("No user signed in yet.");
+    console.log("🔴 Auth state changed - User logged out");
   }
 });
 
-// Expose sendMessage to window so button onclick can trigger it
+// ── EXPOSE FUNCTIONS TO WINDOW ──────────────────
 window.sendMessage = sendMessage;
+window.openChat = openChat;
+window.closeChat = closeChat;
+window.sendSticker = sendSticker;
+window.toggleStickers = toggleStickers;
+window.toggleRecording = toggleRecording;
+window.handleLogin = handleLogin;
+window.handleLogout = handleLogout;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+
+console.log("✅ All functions exposed to window. Chat should work now!");
 </script>
 </body>
 </html>
