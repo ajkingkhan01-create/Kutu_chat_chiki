@@ -1068,16 +1068,35 @@ function listenForMessages() {
           
           let mediaContent = '';
           
-          // Handle image messages
+          // Handle image messages - support both old imgUrl and new imageData
           if (data.imgUrl) {
             mediaContent = `<img src="${data.imgUrl}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; margin-top:6px;">`;
           }
-          // Handle audio messages
+          else if (data.imageData) {
+            mediaContent = `<img src="${data.imageData}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; margin-top:6px;">`;
+          }
+          // Handle audio messages - support both old audioUrl and new audioData
           else if (data.audioUrl) {
             mediaContent = `
               <div class="msg-audio" style="margin-top:6px;">
                 <button class="audio-play-btn" onclick="this.nextElementSibling.play()">▶</button>
                 <audio style="display:none;" src="${data.audioUrl}"></audio>
+                <div class="audio-waveform" id="wave-${Date.now()}">
+                  <span style="height:30%"></span>
+                  <span style="height:60%"></span>
+                  <span style="height:45%"></span>
+                  <span style="height:80%"></span>
+                  <span style="height:55%"></span>
+                  <span style="height:40%"></span>
+                </div>
+                <span style="font-size:0.72rem;opacity:0.5">Audio</span>
+              </div>`;
+          }
+          else if (data.audioData) {
+            mediaContent = `
+              <div class="msg-audio" style="margin-top:6px;">
+                <button class="audio-play-btn" onclick="this.nextElementSibling.play()">▶</button>
+                <audio style="display:none;" src="${data.audioData}"></audio>
                 <div class="audio-waveform" id="wave-${Date.now()}">
                   <span style="height:30%"></span>
                   <span style="height:60%"></span>
@@ -1095,7 +1114,7 @@ function listenForMessages() {
               <div class="msg-bubble-avatar">${userInfo.emoji}</div>
               <div class="msg-content">
                 ${!isSender ? `<span class="msg-name">${userInfo.name}</span>` : ''}
-                <div class="msg-bubble">${data.imgUrl || data.audioUrl ? '' : escHtml(data.text || '')}${mediaContent}</div>
+                <div class="msg-bubble">${data.imgUrl || data.imageData || data.audioUrl || data.audioData ? '' : escHtml(data.text || '')}${mediaContent}</div>
                 <span class="msg-time">${getTime()}</span>
               </div>
             </div>`;
@@ -1310,56 +1329,61 @@ async function sendPreviewedMedia() {
   closeMediaPreview();
   
   try {
-    // Upload to Firebase Storage
-    const folderName = type === 'audio' ? 'chat-audio' : 'chat-images';
-    const timestamp = Date.now();
-    const sRef = ref(storage, `${folderName}/${timestamp}-${file.name}`);
-    
-    console.log(`📦 Starting upload to: ${folderName}/${timestamp}-${file.name}`);
-    const snapshot = await uploadBytes(sRef, file);
-    console.log(`✅ File uploaded to Storage`);
-    
-    const fileUrl = await getDownloadURL(snapshot.ref);
-    console.log(`✅ Download URL obtained: ${fileUrl}`);
-    
-    // Send to Firestore
-    const messageData = { 
-      text: type === 'audio' ? '[Voice Message]' : '[Image]',
-      sender: currentUser, 
-      timestamp: serverTimestamp() 
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target.result;
+      console.log(`✅ File converted to base64, size: ${base64Data.length} bytes`);
+      
+      // Send directly to Firestore
+      const messageData = { 
+        text: type === 'audio' ? '[Voice Message]' : '[Image]',
+        sender: currentUser, 
+        timestamp: serverTimestamp(),
+        fileName: file.name,
+        fileType: file.type
+      };
+      
+      if (type === 'audio') {
+        messageData.audioData = base64Data;
+      } else {
+        messageData.imageData = base64Data;
+      }
+      
+      try {
+        const docRef = await addDoc(collection(db, 'messages'), messageData);
+        console.log(`✅ ${type} message sent to Firestore with ID: ${docRef.id}`);
+        
+        appendMessage(`
+          <div class="msg-row me msg-enter">
+            <div class="msg-bubble-avatar">🐾</div>
+            <div class="msg-content">
+              <div class="msg-bubble" style="color:#5adf8a;">✓ ${type === 'audio' ? 'Voice message' : 'Photo'} sent ✓</div>
+              <span class="msg-time">${getTime()}</span>
+            </div>
+          </div>`);
+      } catch (firestoreError) {
+        console.error(`❌ Firestore error:`, firestoreError);
+        appendMessage(`
+          <div class="msg-row me msg-enter">
+            <div class="msg-bubble-avatar">🐾</div>
+            <div class="msg-content">
+              <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to send ${type}</div>
+              <span class="msg-time">${getTime()}</span>
+            </div>
+          </div>`);
+      }
     };
     
-    if (type === 'audio') {
-      messageData.audioUrl = fileUrl;
-    } else {
-      messageData.imgUrl = fileUrl;
-    }
+    reader.readAsDataURL(file);
     
-    const docRef = await addDoc(collection(db, 'messages'), messageData);
-    console.log(`✅ ${type} message sent to Firestore with ID: ${docRef.id}`);
-    
-    appendMessage(`
-      <div class="msg-row me msg-enter">
-        <div class="msg-bubble-avatar">🐾</div>
-        <div class="msg-content">
-          <div class="msg-bubble" style="color:#5adf8a;">✓ ${type === 'audio' ? 'Voice message' : 'Photo'} sent ✓</div>
-          <span class="msg-time">${getTime()}</span>
-        </div>
-      </div>`);
-      
   } catch (error) {
-    console.error(`❌ Error uploading ${type}:`, error.code, error.message);
-    
-    let errorMsg = `Failed to upload ${type}`;
-    if (error.code === 'storage/unauthorized') errorMsg = 'Storage permission denied - check Firebase rules';
-    if (error.code === 'storage/quota-exceeded') errorMsg = 'Storage quota exceeded';
-    if (error.code === 'storage/invalid-path') errorMsg = 'Invalid file path';
-    
+    console.error(`❌ Error processing ${type}:`, error);
     appendMessage(`
       <div class="msg-row me msg-enter">
         <div class="msg-bubble-avatar">🐾</div>
         <div class="msg-content">
-          <div class="msg-bubble" style="color:#ff6b7a;">❌ ${errorMsg}</div>
+          <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to process ${type}</div>
           <span class="msg-time">${getTime()}</span>
         </div>
       </div>`);
