@@ -1327,69 +1327,74 @@ async function sendPreviewedMedia() {
   console.log(`📤 Uploading ${type}: ${file.name}...`);
   
   closeMediaPreview();
+  pendingMediaFile = null;
   
   try {
-    // Read file as base64
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64Data = event.target.result;
-      console.log(`✅ File converted to base64, size: ${base64Data.length} bytes`);
-      
-      // Send directly to Firestore
-      const messageData = { 
-        text: type === 'audio' ? '[Voice Message]' : '[Image]',
-        sender: currentUser, 
-        timestamp: serverTimestamp(),
-        fileName: file.name,
-        fileType: file.type
-      };
-      
-      if (type === 'audio') {
-        messageData.audioData = base64Data;
-      } else {
-        messageData.imageData = base64Data;
-      }
-      
-      try {
-        const docRef = await addDoc(collection(db, 'messages'), messageData);
-        console.log(`✅ ${type} message sent to Firestore with ID: ${docRef.id}`);
-        
-        appendMessage(`
-          <div class="msg-row me msg-enter">
-            <div class="msg-bubble-avatar">🐾</div>
-            <div class="msg-content">
-              <div class="msg-bubble" style="color:#5adf8a;">✓ ${type === 'audio' ? 'Voice message' : 'Photo'} sent ✓</div>
-              <span class="msg-time">${getTime()}</span>
-            </div>
-          </div>`);
-      } catch (firestoreError) {
-        console.error(`❌ Firestore error:`, firestoreError);
-        appendMessage(`
-          <div class="msg-row me msg-enter">
-            <div class="msg-bubble-avatar">🐾</div>
-            <div class="msg-content">
-              <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to send ${type}</div>
-              <span class="msg-time">${getTime()}</span>
-            </div>
-          </div>`);
-      }
+    // Create a unique path in Firebase Storage
+    const timestamp = Date.now();
+    const userId = auth.currentUser.uid;
+    const storagePath = `${type}s/${userId}/${timestamp}_${file.name}`;
+    const storageRef = ref(storage, storagePath);
+    
+    // Upload file to Firebase Storage
+    console.log(`📤 Uploading to Storage at: ${storagePath}`);
+    const uploadResult = await uploadBytes(storageRef, file);
+    console.log(`✅ File uploaded to Storage:`, uploadResult);
+    
+    // Get download URL
+    const downloadUrl = await getDownloadURL(storageRef);
+    console.log(`✅ Download URL obtained: ${downloadUrl}`);
+    
+    // Create message with URL reference instead of base64
+    const messageData = { 
+      text: type === 'audio' ? '[Voice Message]' : '[Image]',
+      sender: currentUser, 
+      timestamp: serverTimestamp(),
+      fileName: file.name,
+      fileType: file.type
     };
     
-    reader.readAsDataURL(file);
+    if (type === 'audio') {
+      messageData.audioUrl = downloadUrl;
+    } else {
+      messageData.imgUrl = downloadUrl;
+    }
+    
+    try {
+      const docRef = await addDoc(collection(db, 'messages'), messageData);
+      console.log(`✅ ${type} message sent to Firestore with ID: ${docRef.id}`);
+      
+      appendMessage(`
+        <div class="msg-row me msg-enter">
+          <div class="msg-bubble-avatar">🐾</div>
+          <div class="msg-content">
+            <div class="msg-bubble" style="color:#5adf8a;">✓ ${type === 'audio' ? 'Voice message' : 'Photo'} sent ✓</div>
+            <span class="msg-time">${getTime()}</span>
+          </div>
+        </div>`);
+    } catch (firestoreError) {
+      console.error(`❌ Firestore error:`, firestoreError);
+      appendMessage(`
+        <div class="msg-row me msg-enter">
+          <div class="msg-bubble-avatar">🐾</div>
+          <div class="msg-content">
+            <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to send ${type}</div>
+            <span class="msg-time">${getTime()}</span>
+          </div>
+        </div>`);
+    }
     
   } catch (error) {
-    console.error(`❌ Error processing ${type}:`, error);
+    console.error(`❌ Error uploading ${type}:`, error);
     appendMessage(`
       <div class="msg-row me msg-enter">
         <div class="msg-bubble-avatar">🐾</div>
         <div class="msg-content">
-          <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to process ${type}</div>
+          <div class="msg-bubble" style="color:#ff6b7a;">❌ Failed to upload ${type}</div>
           <span class="msg-time">${getTime()}</span>
         </div>
       </div>`);
   }
-  
-  pendingMediaFile = null;
 }
 
 function handleInputKeydown(e) {
