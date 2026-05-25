@@ -264,7 +264,7 @@
     .audio-waveform span { display:block; width:2px; background:rgba(255,255,255,0.5); border-radius:2px; }
 
     .chat-input-bar { padding:14px 16px 20px; border-top:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.2); flex-shrink:0; }
-    .sticker-tray { display:none; padding:12px 0 8px; gap:8px; flex-wrap:wrap; max-height:100px; overflow-y:auto; }
+    .sticker-tray { display:none; padding:12px 8px 8px; gap:8px; flex-wrap:wrap; max-height:200px; overflow-y:auto; overflow-x:hidden; }
     .sticker-tray.open { display:flex; }
     .sticker-btn { font-size:1.8rem; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:6px 10px; cursor:pointer; transition:background 0.2s, transform 0.2s; }
     .sticker-btn:hover { background:rgba(212,133,138,0.1); transform:scale(1.15); }
@@ -556,20 +556,134 @@
 
     <div class="chat-input-bar">
       <div class="sticker-tray" id="sticker-tray">
-        <button class="sticker-btn" onclick="sendSticker('🥰')">🥰</button>
-        <button class="sticker-btn" onclick="sendSticker('💗')">💗</button>
-        <button class="sticker-btn" onclick="sendSticker('🦋')">🦋</button>
-        <button class="sticker-btn" onclick="sendSticker('🌸')">🌸</button>
-        <button class="sticker-btn" onclick="sendSticker('🌹')">🌹</button>
-        <button class="sticker-btn" onclick="sendSticker('✨')">✨</button>
-        <button class="sticker-btn" onclick="sendSticker('🥺')">🥺</button>
+        <!-- Hearts & Love -->
+        <button class="sticker-btn" onclick="sendSticker('❤️')">❤️</button>
+        <button class="sticker-btn" onclick="sendSticker('🧡')">🧡</button>
+        <button class="sticker-btn" onclick="sendSticker('💛')">💛</button>
+        <button class="sticker-btn" onclick="sendSticker('💚')">💚</button>
+        <button class="sticker-btn" onclick="sendSticker('💙')">💙</button>
+        <button class="sticker-btn" onclick="sendSticker('💜')">💜</button>
+        <button class="sticker-btn" onclick="sendSticker('🤍')">🤍</button>
+        <button class="sticker-btn" onclick="sendSticker('🖤')">🖤</button>
+        <button class="sticker-btn" onclick="sendSticker('🩶')">🩶</button>
+        <button class="sticker-btn" onclick="sendSticker('🧡')">💗</button>
         <button class="sticker-btn" onclick="sendSticker('💝')">💝</button>
-        <button class="sticker-btn" onclick="sendSticker('🌙')">🌙</button>
+        <button class="sticker-btn" onclick="sendSticker('🫶🏻')">🫶🏻</button>
+        <!-- Happy Faces -->
+        <button class="sticker-btn" onclick="sendSticker('😊')">😊</button>
+        <button class="sticker-btn" onclick="sendSticker('🥰')">🥰</button>
+        <button class="sticker-btn" onclick="sendSticker('😍')">😍</button>
+        <button class="sticker-btn" onclick="sendSticker('🤗')">🤗</button>
+        <button class="sticker-btn" onclick="sendSticker('😘')">😘</button>
+        <button class="sticker-btn" onclick="sendSticker('😉')">😉</button>
+        <!-- Sad/Other Emotions -->
+        <button class="sticker-btn" onclick="sendSticker('🥺')">🥺</button>
+        <button class="sticker-btn" onclick="sendSticker('😢')">😢</button>
+        <button class="sticker-btn" onclick="sendSticker('😭')">😭</button>
+        <button class="sticker-btn" onclick="sendSticker('😨')">😨</button>
+        <button class="sticker-btn" onclick="sendSticker('😱')">😱</button>
+        <button class="sticker-btn" onclick="sendSticker('🥶')">🥶</button>
+        <button class="sticker-btn" onclick="sendSticker('😶‍🌫️')">😶‍🌫️</button>
+        <button class="sticker-btn" onclick="sendSticker('🫣')">🫣</button>
+        <button class="sticker-btn" onclick="sendSticker('😬')">😬</button>
+        <button class="sticker-btn" onclick="sendSticker('🙄')">🙄</button>
+        <button class="sticker-btn" onclick="sendSticker('😴')">😴</button>
+        <button class="sticker-btn" onclick="sendSticker('😪')">😪</button>
+        <!-- Dark/Spooky -->
+        <button class="sticker-btn" onclick="sendSticker('👿')">👿</button>
+        <button class="sticker-btn" onclick="sendSticker('😈')">😈</button>
+        <button class="sticker-btn" onclick="sendSticker('🤡')">🤡</button>
+        <button class="sticker-btn" onclick="sendSticker('👺')">👺</button>
+        <button class="sticker-btn" onclick="sendSticker('👹')">👹</button>
+        <button class="sticker-btn" onclick="sendSticker('👻')">👻</button>
+        <button class="sticker-btn" onclick="sendSticker('💀')">💀</button>
+        <button class="sticker-btn" onclick="sendSticker('☠️')">☠️</button>
+        <button class="sticker-btn" onclick="sendSticker('👽')">👽</button>
+        <button class="sticker-btn" onclick="sendSticker('👾')">👾</button>
+        <!-- Cats -->
+        <button class="sticker-btn" onclick="sendSticker('😸')">😸</button>
+        <button class="sticker-btn" onclick="sendSticker('😻')">😻</button>
+        <button class="sticker-btn" onclick="sendSticker('😹')">😹</button>
+        <button class="sticker-btn" onclick="sendSticker('🙀')">🙀</button>
+        <button class="sticker-btn" onclick="sendSticker('😺')">😺</button>
+        <!-- Hands -->
+        <button class="sticker-btn" onclick="sendSticker('👋')">👋</button>
+        <button class="sticker-btn" onclick="sendSticker('🤲')">🤲</button>
+        <button class="sticker-btn" onclick="sendSticker('👊')">👊</button>
+        <button class="sticker-btn" onclick="sendSticker('✊')">✊</button>
+        <button class="sticker-btn" onclick="sendSticker('🤞')">🤞</button>
+        <button class="sticker-btn" onclick="sendSticker('👄')">👄</button>
+        <button class="sticker-btn" onclick="sendSticker('🫦')">🫦</button>
+        <button class="sticker-btn" onclick="sendSticker('👅')">👅</button>
+        <button class="sticker-btn" onclick="sendSticker('👁️')">👁️</button>
+        <button class="sticker-btn" onclick="sendSticker('🫂')">🫂</button>
+        <!-- Animals -->
+        <button class="sticker-btn" onclick="sendSticker('🐯')">🐯</button>
+        <button class="sticker-btn" onclick="sendSticker('🦁')">🦁</button>
+        <button class="sticker-btn" onclick="sendSticker('🐼')">🐼</button>
+        <button class="sticker-btn" onclick="sendSticker('🐰')">🐰</button>
+        <button class="sticker-btn" onclick="sendSticker('🐮')">🐮</button>
+        <button class="sticker-btn" onclick="sendSticker('🦊')">🦊</button>
+        <button class="sticker-btn" onclick="sendSticker('🐈‍⬛')">🐈‍⬛</button>
+        <button class="sticker-btn" onclick="sendSticker('🐈')">🐈</button>
+        <button class="sticker-btn" onclick="sendSticker('🐩')">🐩</button>
+        <button class="sticker-btn" onclick="sendSticker('🐕')">🐕</button>
+        <!-- Flowers -->
+        <button class="sticker-btn" onclick="sendSticker('🌹')">🌹</button>
+        <button class="sticker-btn" onclick="sendSticker('🌺')">🌺</button>
+        <button class="sticker-btn" onclick="sendSticker('🌸')">🌸</button>
+        <button class="sticker-btn" onclick="sendSticker('🥀')">🥀</button>
+        <button class="sticker-btn" onclick="sendSticker('🪻')">🪻</button>
+        <button class="sticker-btn" onclick="sendSticker('🌼')">🌼</button>
+        <button class="sticker-btn" onclick="sendSticker('🌻')">🌻</button>
+        <button class="sticker-btn" onclick="sendSticker('🪷')">🪷</button>
+        <button class="sticker-btn" onclick="sendSticker('🌷')">🌷</button>
+        <button class="sticker-btn" onclick="sendSticker('💐')">💐</button>
+        <!-- Stars & Sky -->
+        <button class="sticker-btn" onclick="sendSticker('⭐️')">⭐️</button>
+        <button class="sticker-btn" onclick="sendSticker('✨')">✨</button>
+        <button class="sticker-btn" onclick="sendSticker('🌟')">🌟</button>
         <button class="sticker-btn" onclick="sendSticker('💫')">💫</button>
-        <button class="sticker-btn" onclick="sendSticker('🐾')">🐾</button>
-        <button class="sticker-btn" onclick="sendSticker('🍓')">🍓</button>
-        <button class="sticker-btn" onclick="sendSticker('🌊')">🌊</button>
+        <button class="sticker-btn" onclick="sendSticker('🌙')">🌙</button>
+        <button class="sticker-btn" onclick="sendSticker('⚡️')">⚡️</button>
+        <button class="sticker-btn" onclick="sendSticker('🔥')">🔥</button>
+        <button class="sticker-btn" onclick="sendSticker('💥')">💥</button>
+        <button class="sticker-btn" onclick="sendSticker('🌈')">🌈</button>
+        <button class="sticker-btn" onclick="sendSticker('🌤️')">🌤️</button>
+        <button class="sticker-btn" onclick="sendSticker('⛅️')">⛅️</button>
+        <button class="sticker-btn" onclick="sendSticker('🌥️')">🌥️</button>
         <button class="sticker-btn" onclick="sendSticker('☁️')">☁️</button>
+        <button class="sticker-btn" onclick="sendSticker('⛈️')">⛈️</button>
+        <button class="sticker-btn" onclick="sendSticker('☃️')">☃️</button>
+        <!-- Water -->
+        <button class="sticker-btn" onclick="sendSticker('💧')">💧</button>
+        <button class="sticker-btn" onclick="sendSticker('💦')">💦</button>
+        <button class="sticker-btn" onclick="sendSticker('🌊')">🌊</button>
+        <button class="sticker-btn" onclick="sendSticker('☔️')">☔️</button>
+        <!-- Food -->
+        <button class="sticker-btn" onclick="sendSticker('🍓')">🍓</button>
+        <button class="sticker-btn" onclick="sendSticker('🍇')">🍇</button>
+        <button class="sticker-btn" onclick="sendSticker('🍒')">🍒</button>
+        <button class="sticker-btn" onclick="sendSticker('🍑')">🍑</button>
+        <button class="sticker-btn" onclick="sendSticker('🍔')">🍔</button>
+        <button class="sticker-btn" onclick="sendSticker('🍕')">🍕</button>
+        <button class="sticker-btn" onclick="sendSticker('🌮')">🌮</button>
+        <button class="sticker-btn" onclick="sendSticker('🍟')">🍟</button>
+        <button class="sticker-btn" onclick="sendSticker('🍗')">🍗</button>
+        <button class="sticker-btn" onclick="sendSticker('🍜')">🍜</button>
+        <button class="sticker-btn" onclick="sendSticker('🍱')">🍱</button>
+        <button class="sticker-btn" onclick="sendSticker('🍤')">🍤</button>
+        <button class="sticker-btn" onclick="sendSticker('🍣')">🍣</button>
+        <button class="sticker-btn" onclick="sendSticker('🧁')">🧁</button>
+        <button class="sticker-btn" onclick="sendSticker('🍰')">🍰</button>
+        <button class="sticker-btn" onclick="sendSticker('🍦')">🍦</button>
+        <button class="sticker-btn" onclick="sendSticker('🍨')">🍨</button>
+        <!-- Party & Celebration -->
+        <button class="sticker-btn" onclick="sendSticker('🎉')">🎉</button>
+        <button class="sticker-btn" onclick="sendSticker('🎊')">🎊</button>
+        <button class="sticker-btn" onclick="sendSticker('🎁')">🎁</button>
+        <button class="sticker-btn" onclick="sendSticker('🎈')">🎈</button>
+        <button class="sticker-btn" onclick="sendSticker('🎀')">🎀</button>
         <button class="sticker-btn" onclick="sendSticker('🫶')">🫶</button>
         <button class="sticker-btn" onclick="sendSticker('😘')">😘</button>
       </div>
@@ -1071,10 +1185,18 @@ function listenForMessages() {
           
           // Handle image messages - support both old imgUrl and new imageData
           if (data.imgUrl) {
-            mediaContent = `<img src="${data.imgUrl}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; margin-top:6px;">`;
+            mediaContent = `
+              <div style="position:relative; display:inline-block; margin-top:6px;">
+                <img src="${data.imgUrl}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; cursor:pointer;" onclick="downloadImage('${data.imgUrl}', '${data.fileName || 'image.jpg'}')">
+                <button onclick="downloadImage('${data.imgUrl}', '${data.fileName || 'image.jpg'}')" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:0.8rem; font-weight:500;">⬇️ Save</button>
+              </div>`;
           }
           else if (data.imageData) {
-            mediaContent = `<img src="${data.imageData}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; margin-top:6px;">`;
+            mediaContent = `
+              <div style="position:relative; display:inline-block; margin-top:6px;">
+                <img src="${data.imageData}" alt="Image" class="chat-img-preview" style="max-width:100%; border-radius:12px; cursor:pointer;" onclick="downloadImage('${data.imageData}', '${data.fileName || 'image.jpg'}')">
+                <button onclick="downloadImage('${data.imageData}', '${data.fileName || 'image.jpg'}')" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:0.8rem; font-weight:500;">⬇️ Save</button>
+              </div>`;
           }
           // Handle audio messages - support both old audioUrl and new audioData
           else if (data.audioUrl) {
@@ -1148,6 +1270,22 @@ function sendSticker(emoji) {
 
 function toggleStickers() {
   document.getElementById('sticker-tray').classList.toggle('open');
+}
+
+function downloadImage(imageUrl, fileName) {
+  try {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = fileName || 'image.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    console.log(`✅ Downloaded: ${fileName}`);
+  } catch (error) {
+    console.error('❌ Download failed:', error);
+    // Fallback: open in new tab if download fails
+    window.open(imageUrl, '_blank');
+  }
 }
 
 let recording = false;
